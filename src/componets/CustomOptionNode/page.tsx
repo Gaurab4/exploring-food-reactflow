@@ -16,12 +16,14 @@ const CustomOptionNode: React.FC<CustomOptionNodeProps> = ({ data }) => {
         display: "flex",
         alignItems: "center",
         padding: "10px",
-        backgroundColor: "#e0e0e0",
-        borderRadius: "8px",
+        backgroundColor: "white",
+        borderRadius: "25px",
         boxShadow: "0 1px 3px rgba(0, 0, 0, 0.2)",
         width: "180px",
         cursor: "pointer",
-        border: "0.5px solid #FAFAFA",
+        border: "0.5px solid #757575",
+        fontSize:'14px',
+        height:'30px'
       }}
       onClick={data.onClick} 
     >
@@ -29,7 +31,6 @@ const CustomOptionNode: React.FC<CustomOptionNodeProps> = ({ data }) => {
         style={{
           width: "30px",
           height: "30px",
-          backgroundColor: "#FF6B6B",
           borderRadius: "50%",
           display: "flex",
           alignItems: "center",
@@ -37,11 +38,11 @@ const CustomOptionNode: React.FC<CustomOptionNodeProps> = ({ data }) => {
           marginRight: "10px",
         }}
       >
-        🍽️ 
+        ⏩
       </div>
       <div>{data.label}</div>
-      <Handle type="source" position={Position.Right} style={{ visibility: "hidden", padding: "20px" }} />
-      <Handle type="target" position={Position.Left} style={{ visibility: "hidden", padding: "20px" }} />
+      <Handle type="source" position={Position.Right} style={{ visibility: "hidden",  }} />
+      <Handle type="target" position={Position.Left} style={{ visibility: "hidden",  }} />
     </div>
   );
 };
