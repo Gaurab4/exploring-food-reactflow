@@ -22,6 +22,8 @@ const CustomEntityNode: React.FC<CustomNodeProps> = ({ data }) => {
         width: "150px",
         cursor: "pointer",
         border: "0.5px solid #FAFAFA",
+        marginBottom:'20px',
+        overflow:'hidden'
       }}
       onClick={data.onClick} // Call onClick function when node is clicked
     >
@@ -39,9 +41,9 @@ const CustomEntityNode: React.FC<CustomNodeProps> = ({ data }) => {
       >
         🍽️ {/* Example food icon */}
       </div>
-      <div>{data.label}</div>
-      <Handle type="source" position={Position.Right} style={{ visibility: "hidden", padding: "20px" }} />
-      <Handle type="target" position={Position.Left} style={{ visibility: "hidden", padding: "20px" }} />
+      <div >{data.label}</div>
+      <Handle type="source" position={Position.Right} style={{ visibility: "hidden" }} />
+      <Handle type="target" position={Position.Left} style={{ visibility: "hidden" }} />
     </div>
   );
 };

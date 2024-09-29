@@ -8,13 +8,19 @@ import {
   ReactFlowProvider,
   Node,
   Edge,
+  NodeMouseHandler,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import CustomEntityNode from "../CustomEntityNode/page";
-import CustomOptionNode from "../CustomOptionNode/page"; // Import the new CustomOptionNode component
+import CustomOptionNode from "../CustomOptionNode/page";
 
 interface Category {
   strCategory: string;
+}
+
+interface Meal {
+  idMeal: string;
+  strMeal: string;
 }
 
 const initialNodes: Node[] = [
@@ -30,29 +36,60 @@ const AppStart = () => {
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [categoriesVisible, setCategoriesVisible] = useState(false);
+  const [openedNodes, setOpenedNodes] = useState<string>(); 
 
-  const fetchCategories = async (): Promise<void> => {
+
+
+  const  removeNodes = async(parentNode : Node) : Promise<void> => {
+
+    const parentXPosition = parentNode.position.x; 
+
+    
+    setNodes((prevNodes) => {
+     
+      const newNodes = prevNodes
+        .slice() 
+        .reverse()
+        .filter(node => {
+        
+          return node.id === parentNode.id || node.position.x <= parentXPosition;
+        })
+        .reverse(); 
+
+      return newNodes; 
+    });
+  }
+  
+  const fetchCategories = async (parentNode: Node): Promise<void> => {
+   
     try {
       const response = await fetch(
         "https://www.themealdb.com/api/json/v1/1/list.php?c=list"
       );
       const data = await response.json();
       const top5Categories = data?.meals.slice(0, 5);
-
+     
       const newNodes = top5Categories.map((category: Category, index: number) => ({
         id: `${index + 2}`,
-        data: { label: category.strCategory, onClick: () => fetchMeals(category.strCategory) },
+        data: { 
+          label: category.strCategory, 
+          onClick: () => showOption('category', category.strCategory, {
+            id: `${index + 2}`,
+            position: { x: 400, y: (index + 1) * 100 },
+            data: {}
+          }) 
+        },
         position: { x: 400, y: (index + 1) * 100 },
         type: "customNode",
       }));
 
-      const newEdges = top5Categories.map((_, index: number) => ({
+      const newEdges = top5Categories.map((index: number) => ({
         id: `1-${index + 2}`,
         source: "1",
         target: `${index + 2}`,
-        type: "smoothstep",
+        type: "bezier",
       }));
-
+      removeNodes(parentNode);
       setNodes((prevNodes) => [...prevNodes, ...newNodes]);
       setEdges(newEdges);
     } catch (error) {
@@ -60,6 +97,77 @@ const AppStart = () => {
     }
   };
 
+  const showOption = async (category: string, categoryName: string, parentNode: Node): Promise<void> => {
+    
+    console.log(parentNode.id , openedNodes , ' this is parent node ID');
+    if(openedNodes ===  parentNode.id) return ;
+    
+      setOpenedNodes(parentNode.id);
+    // Removed the Nodes if i click back on any diffrent node 
+      removeNodes(parentNode);
+
+      if (category === 'meal') {
+
+        const options = [
+          { label: "View Ingredients", type: "ingredients" },
+          { label: "View Tags", type: "tags" },
+          { label: "View Details", type: "details" },
+        ];
+
+        const optionNodes = options.map((option, index) => ({
+          id: `meal-${category}-${option.type}`,
+          data: { 
+            label: option.label, 
+            onClick: () => fetchMeals(categoryName) 
+          },
+          position: { 
+            x: parentNode.position.x + 200,
+            y: parentNode.position.y + (index + 1) * 100 
+          },
+          type: "customOptionNode",
+        }));
+
+        const optionEdges = options.map((option) => ({
+          id: `meal-${category}-${option.type}-edge`,
+          source: parentNode.id,
+          target: `meal-${category}-${option.type}`,
+          type: "bezier",
+        }));
+
+        setNodes((prevNodes) => [...prevNodes, ...optionNodes]);
+        setEdges((prevEdges) => [...prevEdges, ...optionEdges]);
+      } else {
+        
+        const newNode = {
+          id: `category-${categoryName}-view-meals`,
+          data: { 
+            label: "View Meals", 
+            onClick: () => fetchMeals(categoryName) 
+          },
+          position: { 
+            x: parentNode.position.x + 200, 
+            y: parentNode.position.y + 100 
+          },
+          type: "customOptionNode",
+        };
+
+        const newEdge = {
+          id: `category-${category}-view-meals-edge`,
+          source: parentNode.id,
+          target: `category-${categoryName}-view-meals`,
+          type: "bezier",
+        };
+
+        setNodes((prevNodes) => [...prevNodes, newNode]);
+        setEdges((prevEdges) => [...prevEdges, newEdge]);
+      }
+
+
+
+    
+  };
+
+ 
   const fetchMeals = async (category: string): Promise<void> => {
     try {
       const response = await fetch(
@@ -68,55 +176,45 @@ const AppStart = () => {
       const data = await response.json();
       const meals = data?.meals.slice(0, 5);
 
-      // Create an option node
-      const optionNodeId = `option-${category}`;
-      const optionNode = {
-        id: optionNodeId,
-        data: { label: `View Meals for ${category}`, onClick: () => showMeals(meals) },
-        position: { x: 600, y: 300 }, // Position it wherever you want
-        type: "customOptionNode",
-      };
-
-      setNodes((prevNodes) => [...prevNodes, optionNode]);
-      setEdges((prevEdges) => [
-        ...prevEdges,
-        {
-          id: `category-${category}-option`,
-          source: `category-${category}`,
-          target: optionNodeId,
-          type: "smoothstep",
+      const mealNodes = meals.map((meal: Meal, index: number) => ({
+        id: `meal-${meal.idMeal}`,
+        data: { 
+          label: meal.strMeal, 
+          onClick: () => showOption('meal', meal.strMeal, { 
+            id: `meal-${meal.idMeal}`, 
+            position: { x: 1000, y: (index + 1) * 100 } ,
+            data: {}
+          }) 
         },
-      ]);
+        position: { x: 1000, y: (index + 1) * 100 },
+        type: "customNode",
+      }));
+
+      const mealEdges = meals.map((meal: Meal) => ({
+        id: `category-${category}-meal-${meal.idMeal}`,
+        source: `category-${category}-view-meals`,
+        target: `meal-${meal.idMeal}`,
+        type: "bezier",
+      }));
+
+      setNodes((prevNodes) => [...prevNodes, ...mealNodes]);
+      setEdges((prevEdges) => [...prevEdges, ...mealEdges]);
     } catch (error) {
       console.error("Error fetching meals:", error);
     }
   };
 
-  const showMeals = (meals: any[]): void => {
-    const mealNodes = meals.map((meal: { idMeal: string; strMeal: string }, index: number) => ({
-      id: `meal-${meal.idMeal}`,
-      data: { label: meal.strMeal },
-      position: { x: 800, y: (index + 1) * 100 },
-      type: "customEntityNode", // Use your entity node component
-    }));
-
-    const mealEdges = meals.map((meal: { idMeal: string }) => ({
-      id: `option-${meal.idMeal}`,
-      source: `option-${meal.strCategory}`, // Assuming you want to connect it to the right option node
-      target: `meal-${meal.idMeal}`,
-      type: "smoothstep",
-    }));
-
-    setNodes((prevNodes) => [...prevNodes, ...mealNodes]);
-    setEdges((prevEdges) => [...prevEdges, ...mealEdges]);
-  };
-
-  const onNodeClick = (_: any, node: Node) => {
+ 
+  const onNodeClick: NodeMouseHandler<Node> = (event, node) => {
     if (node.id === "1") {
-      setCategoriesVisible(true);
-      fetchCategories();
+        setCategoriesVisible(true);
+        fetchCategories(node); 
     }
-  };
+};
+
+
+  console.log(edges, 'edges');
+  console.log(nodes, 'nodes');
 
   return (
     <div style={{ height: "100vh", width: "100vw" }}>
@@ -126,10 +224,9 @@ const AppStart = () => {
           edges={categoriesVisible ? edges : []}
           fitView
           onNodeClick={onNodeClick}
-          nodeTypes={{ 
+          nodeTypes={{
             customNode: CustomEntityNode,
             customOptionNode: CustomOptionNode, 
-            
           }}
         />
         <Background />
