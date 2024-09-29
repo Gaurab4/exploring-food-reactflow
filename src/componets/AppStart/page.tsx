@@ -83,7 +83,7 @@ const AppStart = () => {
         type: "customNode",
       }));
 
-      const newEdges = top5Categories.map((index: number) => ({
+      const newEdges = top5Categories.map((_ : object, index: number) => ({
         id: `1-${index + 2}`,
         source: "1",
         target: `${index + 2}`,
@@ -99,11 +99,11 @@ const AppStart = () => {
 
   const showOption = async (category: string, categoryName: string, parentNode: Node): Promise<void> => {
     
-    console.log(parentNode.id , openedNodes , ' this is parent node ID');
     if(openedNodes ===  parentNode.id) return ;
     
       setOpenedNodes(parentNode.id);
-    // Removed the Nodes if i click back on any diffrent node 
+      
+      // Removed the Nodes if i click back on any diffrent node 
       removeNodes(parentNode);
 
       if (category === 'meal') {
@@ -211,7 +211,6 @@ const AppStart = () => {
         fetchCategories(node); 
     }
 };
-
 
   console.log(edges, 'edges');
   console.log(nodes, 'nodes');
