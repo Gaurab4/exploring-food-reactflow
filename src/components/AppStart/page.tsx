@@ -13,6 +13,9 @@ import {
 import "@xyflow/react/dist/style.css";
 import CustomEntityNode from "../CustomEntityNode/page";
 import CustomOptionNode from "../CustomOptionNode/page";
+type Props = {
+  setSelectedMeal: (meal: string) => void; 
+}
 
 interface Category {
   strCategory: string;
@@ -32,7 +35,8 @@ const initialNodes: Node[] = [
   },
 ];
 
-const AppStart = () => {
+const AppStart = (props : Props) => {
+  const {setSelectedMeal} = props;
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [categoriesVisible, setCategoriesVisible] = useState(false);
@@ -83,7 +87,7 @@ const AppStart = () => {
         type: "customNode",
       }));
 
-      const newEdges = top5Categories.map((index: number) => ({
+      const newEdges = top5Categories.map((_ : object, index: number) => ({
         id: `1-${index + 2}`,
         source: "1",
         target: `${index + 2}`,
@@ -97,17 +101,29 @@ const AppStart = () => {
     }
   };
 
+  const selectedOption = async (selectedOption : string , parentNode : Node) : Promise<void> => {
+    if(selectedOption === 'details'){
+      console.log(parentNode.data.label,'this is parentNode')
+      setSelectedMeal(parentNode.data.label as string);
+    }else if(selectedOption === 'ingredients'){
+
+    }else{
+
+    }
+
+  }
+
   const showOption = async (category: string, categoryName: string, parentNode: Node): Promise<void> => {
     
-    console.log(parentNode.id , openedNodes , ' this is parent node ID');
     if(openedNodes ===  parentNode.id) return ;
     
       setOpenedNodes(parentNode.id);
-    // Removed the Nodes if i click back on any diffrent node 
+
+      // Removed the Nodes if i click back on any diffrent node 
       removeNodes(parentNode);
 
       if (category === 'meal') {
-
+       
         const options = [
           { label: "View Ingredients", type: "ingredients" },
           { label: "View Tags", type: "tags" },
@@ -118,7 +134,7 @@ const AppStart = () => {
           id: `meal-${category}-${option.type}`,
           data: { 
             label: option.label, 
-            onClick: () => fetchMeals(categoryName) 
+            onClick: () => selectedOption(option.type , parentNode) 
           },
           position: { 
             x: parentNode.position.x + 200,
@@ -183,7 +199,7 @@ const AppStart = () => {
           onClick: () => showOption('meal', meal.strMeal, { 
             id: `meal-${meal.idMeal}`, 
             position: { x: 1000, y: (index + 1) * 100 } ,
-            data: {}
+            data: {label: meal.strMeal}
           }) 
         },
         position: { x: 1000, y: (index + 1) * 100 },
@@ -212,9 +228,6 @@ const AppStart = () => {
     }
 };
 
-
-  console.log(edges, 'edges');
-  console.log(nodes, 'nodes');
 
   return (
     <div style={{ height: "100vh", width: "100vw" }}>
