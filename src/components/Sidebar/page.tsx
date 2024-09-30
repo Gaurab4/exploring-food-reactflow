@@ -4,9 +4,10 @@ import React, { useEffect, useState } from 'react';
 
 type Props = {
   selectedMeal: string;
+  onClose: () => void;
 };
 
-const Sidebar = ({ selectedMeal }: Props) => {
+const Sidebar = ({ selectedMeal, onClose }: Props) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [mealData, setMealData] = useState<any>({});
 
@@ -33,10 +34,16 @@ const Sidebar = ({ selectedMeal }: Props) => {
     fetchMealData();
   }, [selectedMeal]);
 
-
-
   return (
-    <div className="p-4 bg-white shadow-lg border-l border-gray-200 overflow-y-auto h-full flex-1">
+    <div className="p-4 bg-white shadow-lg border-l border-gray-200 overflow-y-auto h-full flex-1 relative">
+      <button 
+        onClick={onClose} 
+        className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none"
+        style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }} // Styles for the button
+      >
+        X
+      </button>
+
       <div className="flex justify-between items-center mb-4">
         <p className="text-[20px] font-[400] text-gray-500 ">{mealData?.strMeal}</p>
       </div>
@@ -55,41 +62,39 @@ const Sidebar = ({ selectedMeal }: Props) => {
       <div className="space-y-2 text-[12px] text-gray-400 grid ">
         <div className='flex justify-start gap-[50px] '>
           <p>
-          Category:
+            Category:
           </p>
           <p className='text-[14px] text-gray-600'>
-          {mealData?.strCategory}
+            {mealData?.strCategory}
           </p>
-          
         </div>
         <div className='flex justify-start gap-[76px]'>
           <p>
-          Area:
+            Area:
           </p>
           <p className='text-[14px] text-gray-600'>
-          {mealData?.strArea}
+            {mealData?.strArea}
           </p>
-          
         </div>
         <div className='flex justify-start gap-14 '>
           <p>
-          YouTube:{' '}
+            YouTube:{' '}
           </p>
           <p className='text-[14px] text-gray-600'>
-          {mealData?.strYoutube ? 
-            <a href={mealData?.strYoutube} target="_blank" rel="noopener noreferrer" className="text-black underline">
-            {mealData?.strYoutube}
-          </a> : "No link availabe"}
+            {mealData?.strYoutube ? 
+              <a href={mealData?.strYoutube} target="_blank" rel="noopener noreferrer" className="text-black underline">
+                {mealData?.strYoutube}
+              </a> : "No link available"}
           </p>
         </div>
         <div className='flex justify-start gap-16'>
           <p>
-          Recipe:{' '}
+            Recipe:{' '}
           </p>
           <p className='text-[14px] text-gray-600'>
-          <a href={mealData?.strSource} target="_blank" rel="noopener noreferrer" className="text-black underline">
-            {mealData?.strSource}
-          </a>
+            <a href={mealData?.strSource} target="_blank" rel="noopener noreferrer" className="text-black underline">
+              {mealData?.strSource}
+            </a>
           </p>
         </div>
       </div>

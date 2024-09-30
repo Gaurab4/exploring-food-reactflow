@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
 
@@ -22,27 +21,25 @@ const CustomOptionNode: React.FC<CustomOptionNodeProps> = ({ data }) => {
         width: "180px",
         cursor: "pointer",
         border: "0.5px solid #757575",
-        fontSize:'14px',
-        height:'30px'
+        fontSize: "14px",
+        height: "30px"
       }}
       onClick={data.onClick} 
     >
-      <div
-        style={{
-          width: "30px",
-          height: "30px",
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          marginRight: "10px",
-        }}
-      >
-        ⏩
+      <div style={{ marginRight: "10px" }}>
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 24 24" 
+          width="20" 
+          height="20" 
+          style={{ fill: "green" }}
+        >
+          <path d="M18 16.59L15.41 14 12 17.41 8.59 14 6 16.59 12 22l6-6zm-6-14C5.84 2 2 5.84 2 10s3.84 8 8 8 8-3.84 8-8-3.84-8-8-8zm0 14C7.79 16 4 12.21 4 10s3.79-6 6-6 6 3.79 6 6-3.79 6-6 6z"/>
+        </svg>
       </div>
       <div>{data.label}</div>
-      <Handle type="source" position={Position.Right} style={{ visibility: "hidden",  }} />
-      <Handle type="target" position={Position.Left} style={{ visibility: "hidden",  }} />
+      <Handle type="source" position={Position.Right} style={{ visibility: "hidden" }} />
+      <Handle type="target" position={Position.Left} style={{ visibility: "hidden" }} />
     </div>
   );
 };
