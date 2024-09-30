@@ -11,6 +11,9 @@ import Sidebar from '@/components/Sidebar/page';
 export default function Home() {
   const [selectedMeal, setSelectedMeal] = useState<string>();
 
+  const onClose = async () => {
+    setSelectedMeal('');
+  }
   return (
     <div className="flex flex-col h-screen">
       <Header/>
@@ -21,8 +24,8 @@ export default function Home() {
           </ReactFlowProvider>
         </div>
         
-        {selectedMeal && <div className="w-4/12 h-full overflow-y-auto  bg-white  border-spacing-1 border-black ">
-          <Sidebar selectedMeal={selectedMeal} />
+        {selectedMeal  && <div className="w-4/12 h-full overflow-y-auto  bg-white  border-spacing-1 border-black ">
+          <Sidebar selectedMeal={selectedMeal} onClose={onClose} />
         </div>}
       </div>
     </div>
