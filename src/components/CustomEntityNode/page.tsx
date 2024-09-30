@@ -25,13 +25,13 @@ const CustomEntityNode: React.FC<CustomNodeProps> = ({ data }) => {
         marginBottom:'20px',
         overflow:'hidden'
       }}
-      onClick={data.onClick} // Call onClick function when node is clicked
+      onClick={data.onClick} 
     >
       <div
         style={{
           width: "30px",
           height: "30px",
-          backgroundColor: "#FF6B6B", // Red icon background
+          backgroundColor: "#FF6B6B", 
           borderRadius: "50%",
           display: "flex",
           alignItems: "center",
