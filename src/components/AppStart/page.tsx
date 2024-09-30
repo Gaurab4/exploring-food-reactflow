@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import {
   Background,
@@ -24,12 +22,13 @@ interface Category {
 interface Meal {
   idMeal: string;
   strMeal: string;
+  strMealThumb: string;
 }
 
 const initialNodes: Node[] = [
   {
     id: "1",
-    data: { label: "Explore" },
+    data: { label: "Explore", image: '' },
     position: { x: 100, y: 300 },
     type: "customNode",
   },
@@ -77,6 +76,7 @@ const AppStart = (props : Props) => {
         id: `${index + 2}`,
         data: { 
           label: category.strCategory, 
+          image: `https://www.themealdb.com/images/ingredients/${category.strCategory}-Small.png`,
           onClick: () => showOption('category', category.strCategory, {
             id: `${index + 2}`,
             position: { x: 400, y: (index + 1) * 100 },
@@ -110,7 +110,6 @@ const AppStart = (props : Props) => {
     }else{
 
     }
-
   }
 
   const showOption = async (category: string, categoryName: string, parentNode: Node): Promise<void> => {
@@ -129,105 +128,122 @@ const AppStart = (props : Props) => {
           { label: "View Tags", type: "tags" },
           { label: "View Details", type: "details" },
         ];
+      
+      const optionNodes = options.map((option, index) => ({
+       
+        id: `meal-${category}-${option.type}`,
+        data: { 
+          label: option.label, 
+          onClick: () => selectedOption(option.type, parentNode) 
+        },
+        position: { 
+          x: parentNode.position.x + 300,
+          y: index === 0 ?  parentNode.position.y - 10  : index === 1 ?   parentNode.position.y +  30 : parentNode.position.y  + 70
+        },
+        type: "customOptionNode",
+      }));
 
-        const optionNodes = options.map((option, index) => ({
-          id: `meal-${category}-${option.type}`,
-          data: { 
-            label: option.label, 
-            onClick: () => selectedOption(option.type , parentNode) 
-          },
-          position: { 
-            x: parentNode.position.x + 200,
-            y: parentNode.position.y + (index + 1) * 100 
-          },
-          type: "customOptionNode",
-        }));
+      const optionEdges = options.map((option) => ({
+        id: `meal-${category}-${option.type}-edge`,
+        source: parentNode.id,
+        target: `meal-${category}-${option.type}`,
+        type: "bezier",
+      }));
 
-        const optionEdges = options.map((option) => ({
-          id: `meal-${category}-${option.type}-edge`,
-          source: parentNode.id,
-          target: `meal-${category}-${option.type}`,
-          type: "bezier",
-        }));
+      setNodes((prevNodes) => [...prevNodes, ...optionNodes]);
+      setEdges((prevEdges) => [...prevEdges, ...optionEdges]);
+    } else {
+      
+      const newNode = {
+        id: `category-${categoryName}-view-meals`,
+        data: { 
+          label: "View Meals", 
+          onClick: () => fetchMeals(categoryName, parentNode.position.x + 350, parentNode.position.y - 50) 
+        },
+        position: { 
+          x: parentNode.position.x + 350, 
+          y: parentNode.position.y - 50 
+        },
+        type: "customOptionNode",
+      };
 
-        setNodes((prevNodes) => [...prevNodes, ...optionNodes]);
-        setEdges((prevEdges) => [...prevEdges, ...optionEdges]);
-      } else {
-        
-        const newNode = {
-          id: `category-${categoryName}-view-meals`,
-          data: { 
-            label: "View Meals", 
-            onClick: () => fetchMeals(categoryName) 
-          },
-          position: { 
-            x: parentNode.position.x + 200, 
-            y: parentNode.position.y + 100 
-          },
-          type: "customOptionNode",
-        };
+      const newEdge = {
+        id: `category-${category}-view-meals-edge`,
+        source: parentNode.id,
+        target: `category-${categoryName}-view-meals`,
+        type: "bezier",
+      };
 
-        const newEdge = {
-          id: `category-${category}-view-meals-edge`,
-          source: parentNode.id,
-          target: `category-${categoryName}-view-meals`,
-          type: "bezier",
-        };
-
-        setNodes((prevNodes) => [...prevNodes, newNode]);
-        setEdges((prevEdges) => [...prevEdges, newEdge]);
-      }
-
-
-
-    
+      setNodes((prevNodes) => [...prevNodes, newNode]);
+      setEdges((prevEdges) => [...prevEdges, newEdge]);
+    }
   };
 
- 
-  const fetchMeals = async (category: string): Promise<void> => {
+  const fetchMeals = async (category: string, x: number, y: number): Promise<void> => {
     try {
       const response = await fetch(
         `https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`
       );
       const data = await response.json();
       const meals = data?.meals.slice(0, 5);
-
-      const mealNodes = meals.map((meal: Meal, index: number) => ({
-        id: `meal-${meal.idMeal}`,
-        data: { 
-          label: meal.strMeal, 
-          onClick: () => showOption('meal', meal.strMeal, { 
-            id: `meal-${meal.idMeal}`, 
-            position: { x: 1000, y: (index + 1) * 100 } ,
-            data: {label: meal.strMeal}
-          }) 
-        },
-        position: { x: 1000, y: (index + 1) * 100 },
-        type: "customNode",
-      }));
-
+  
+      if (!meals) {
+        console.error("No meals found for this category.");
+        return;
+      }
+  
+      const mealCount = meals.length; 
+      const mealNodes = meals.map((meal: Meal, index: number) => {
+        let adjustedY;
+  
+  
+        if (mealCount === 1) {
+          adjustedY = y; 
+        } else if (mealCount === 2) {
+          adjustedY = index === 0 ? y - 100 : y + 100;
+        } else if (mealCount === 3) {
+          adjustedY = index === 0 ? y - 100 : index === 1 ? y : y + 100; 
+        } else if (mealCount === 4) {
+          adjustedY = index < 2 ? y - (100 * (2 - index)) : y + (100 * (index - 1)); 
+        } else { 
+          adjustedY = index < 2 ? y - (100 * (2 - index)) : index === 2 ? y : y + (120 * (index - 2));
+        }
+  
+        return {
+          id: `meal-${meal.idMeal}`,
+          data: {
+            label: meal.strMeal,
+            image: meal.strMealThumb,
+            onClick: () => showOption('meal', meal.strMeal, {
+              id: `meal-${meal.idMeal}`,
+              position: { x: x + 250, y: adjustedY }, 
+              data: { label: meal.strMeal }
+            })
+          },
+          position: { x: x + 250, y: adjustedY },
+          type: "customNode",
+        };
+      });
+  
       const mealEdges = meals.map((meal: Meal) => ({
         id: `category-${category}-meal-${meal.idMeal}`,
         source: `category-${category}-view-meals`,
         target: `meal-${meal.idMeal}`,
         type: "bezier",
       }));
-
+  
       setNodes((prevNodes) => [...prevNodes, ...mealNodes]);
       setEdges((prevEdges) => [...prevEdges, ...mealEdges]);
     } catch (error) {
       console.error("Error fetching meals:", error);
     }
   };
-
- 
   const onNodeClick: NodeMouseHandler<Node> = (event, node) => {
     if (node.id === "1") {
-        setCategoriesVisible(true);
-        fetchCategories(node); 
+      setCategoriesVisible(true);
+      fetchCategories(node); 
     }
-};
-
+  };
 
   return (
     <div style={{ height: "100vh", width: "100vw" }}>
